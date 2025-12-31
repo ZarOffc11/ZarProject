@@ -339,13 +339,13 @@ main() {
     fi
     
     # Install theme
-    install_theme "$zip_url" "$theme_dir"
+    install_theme "$DEFAULT_ZIP_URL" "$DEFAULT_THEME_DIR"
     
     # Set permissions
-    set_permissions "$theme_dir"
+    set_permissions "$DEFAULT_THEME_DIR"
     
     # Verify installation
-    verify_installation "$theme_dir"
+    verify_installation "$DEFAULT_THEME_DIR"
     
     # Clear view & Cache
     cd /var/www/pterodactyl
