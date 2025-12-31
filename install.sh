@@ -15,7 +15,7 @@ NC='\033[0m'
 
 # Configuration
 THEME_DIR="/var/www/pterodactyl/resources/views"
-THEME_ZIP_URL="https://github.com/user-attachments/files/24390941/ZarProject.AdminTheme.V1.zip"
+THEME_ZIP_URL="https://github.com/ZarOffc11/admin-theme/archive/refs/tags/Update.zip"
 BACKUP_DIR="/tmp/zarproject_backup_$(date +%Y%m%d_%H%M%S)"
 TEMP_DIR="/tmp/zarproject_install_$(date +%s)"
 
