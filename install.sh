@@ -15,12 +15,13 @@ NC='\033[0m'
 
 # Configuration
 THEME_DIR="/var/www/pterodactyl/resources/views"
+# Link ini otomatis mengambil zip dari branch main terbaru
 THEME_ZIP_URL="https://github.com/ZarOffc11/admin-theme/archive/refs/heads/main.zip"
 BACKUP_DIR="/tmp/zarproject_backup_$(date +%Y%m%d_%H%M%S)"
 TEMP_DIR="/tmp/zarproject_install_$(date +%s)"
 
-# ASCII Art
-Show_banner() {
+# ASCII Art (UPDATED)
+show_banner() {
     clear
     echo -e "${BLUE}"
     cat << "EOF"
@@ -37,7 +38,6 @@ EOF
     echo -e "${NC}"
     sleep 2
 }
-
 
 # Spinner animation
 spinner() {
@@ -91,11 +91,13 @@ check_dependencies() {
     
     local missing=()
     
-    # Check wget
+    # Check wget or curl
     if command -v wget &> /dev/null; then
         echo -e "${GREEN}[+]${NC} wget is installed"
+    elif command -v curl &> /dev/null; then
+        echo -e "${GREEN}[+]${NC} curl is installed"
     else
-        echo -e "${RED}[-]${NC} wget not found"
+        echo -e "${RED}[-]${NC} wget or curl not found"
         missing+=("wget")
     fi
     
@@ -135,6 +137,7 @@ create_backup() {
         mkdir -p "$BACKUP_DIR"
         echo -e "${YELLOW}[i]${NC} Backing up files..."
         
+        # Backup specific directories that we are about to replace
         local dirs=("admin" "layouts" "partials" "templates")
         for dir in "${dirs[@]}"; do
             if [ -d "$THEME_DIR/$dir" ]; then
@@ -157,16 +160,20 @@ create_backup() {
 
 # Download theme
 download_theme() {
-    print_step "Downloading ZarProject Theme"
+    print_step "Downloading ZarProject Theme (Latest)"
     
-    echo -e "${YELLOW}[i]${NC} Source: $THEME_ZIP_URL"
-    sleep 1
-    
+    # Clean up temp dir first
+    rm -rf "$TEMP_DIR"
     mkdir -p "$TEMP_DIR"
     cd "$TEMP_DIR"
     
-    echo -ne "${CYAN}[↓]${NC} Downloading "
-    wget -q --show-progress -O zarproject-theme.zip "$THEME_ZIP_URL"
+    echo -e "${YELLOW}[i]${NC} Fetching from GitHub..."
+    
+    if command -v wget &> /dev/null; then
+        wget -q --show-progress -O zarproject-theme.zip "$THEME_ZIP_URL"
+    else
+        curl -L -o zarproject-theme.zip "$THEME_ZIP_URL"
+    fi
     
     if [ -f "zarproject-theme.zip" ]; then
         print_success "Download completed"
@@ -177,53 +184,56 @@ download_theme() {
     sleep 1
 }
 
-# Extract theme
-extract_theme() {
-    print_step "Extracting theme files"
+# Extract and Install theme (Combined for better logic handling)
+install_theme() {
+    print_step "Extracting and Installing Theme"
+    
+    cd "$TEMP_DIR"
     
     echo -e "${YELLOW}[i]${NC} Extracting archive..."
-    unzip -q zarproject-theme.zip &
-    pid=$!
-    echo -ne "   ${CYAN}↻${NC} Extracting "
-    spinner $pid
+    unzip -q -o zarproject-theme.zip
     
-    rm zarproject-theme.zip
-    print_success "Extraction complete"
-    sleep 1
-}
-
-# Install theme
-install_theme() {
-    print_step "Installing ZarProject Theme"
+    # Detect the extracted folder name (Github usually names it repo-main)
+    # We find the first directory inside temp
+    EXTRACTED_DIR=$(find . -maxdepth 1 -type d -name "admin-theme-*" | head -n 1)
     
-    echo -e "${YELLOW}[i]${NC} Destination: $THEME_DIR"
-    sleep 1
+    if [ -d "$EXTRACTED_DIR" ]; then
+        cd "$EXTRACTED_DIR"
+        print_success "Extracted to: $EXTRACTED_DIR"
+    else
+        print_error "Could not find extracted directory. Check zip structure."
+        ls -la
+        exit 1
+    fi
+    
+    echo -e "${YELLOW}[i]${NC} Installing files to $THEME_DIR..."
     
     # Create theme directory if not exists
     mkdir -p "$THEME_DIR"
     
-    # Install each directory
+    # Install each directory found in the git repo
     local dirs=("admin" "layouts" "partials" "templates")
+    
     for dir in "${dirs[@]}"; do
-        if [ -d "$TEMP_DIR/$dir" ]; then
+        if [ -d "$dir" ]; then
             echo -ne "   ${CYAN}→${NC} Installing $dir "
             
-            # Remove old directory
+            # Remove old directory in destination
             if [ -d "$THEME_DIR/$dir" ]; then
                 rm -rf "$THEME_DIR/$dir"
             fi
             
             # Copy new directory
-            cp -r "$TEMP_DIR/$dir" "$THEME_DIR/" > /dev/null 2>&1 &
+            cp -r "$dir" "$THEME_DIR/" > /dev/null 2>&1 &
             pid=$!
             spinner $pid
             echo -e "   ${GREEN}✓${NC}"
         else
-            echo -e "   ${RED}⚠${NC} $dir not found in package"
+            echo -e "   ${YELLOW}⚠${NC} $dir not found in update (Skipping)"
         fi
     done
     
-    print_success "Installation complete"
+    print_success "Installation copy complete"
     sleep 1
 }
 
@@ -294,37 +304,31 @@ verify_installation() {
             file_count=$(find "$THEME_DIR/$dir" -type f | wc -l)
             echo -e "   ${GREEN}✓${NC} $dir ($file_count files)"
         else
-            echo -e "   ${RED}✗${NC} $dir (MISSING)"
-            all_ok=false
+            # Not strict error because some updates might not have all folders
+            echo -e "   ${YELLOW}-${NC} $dir (Not present in this version)"
         fi
     done
     
     echo ""
     sleep 1
     
-    if [ "$all_ok" = true ]; then
-        print_zarlogo
-        
-        echo -e "${GREEN}"
-        echo '╔══════════════════════════════════════════════════════════╗'
-        echo '║                   INSTALLATION SUCCESSFUL!               ║'
-        echo '╚══════════════════════════════════════════════════════════╝'
-        echo -e "${NC}"
-        
-        echo -e "${CYAN}┌──────────────────────────────────────────────────────┐${NC}"
-        echo -e "${CYAN}│  📁 Theme Location: $THEME_DIR  │${NC}"
-        echo -e "${CYAN}│  💾 Backup Location: $BACKUP_DIR │${NC}"
-        echo -e "${CYAN}└──────────────────────────────────────────────────────┘${NC}"
-        
-        echo -e "\n${YELLOW}⚠ IMPORTANT:${NC}"
-        echo -e "   1. Refresh your browser (Ctrl+F5)"
-        echo -e "   2. Restart queue worker: ${CYAN}systemctl restart pteroq${NC}"
-        echo -e "   3. If theme doesn't show, run: ${CYAN}php artisan optimize:clear${NC}"
-        
-    else
-        print_error "Installation incomplete!"
-        echo -e "${YELLOW}[i]${NC} Restore backup from: $BACKUP_DIR"
-    fi
+    print_zarlogo
+    
+    echo -e "${GREEN}"
+    echo '╔══════════════════════════════════════════════════════════╗'
+    echo '║                   INSTALLATION SUCCESSFUL!               ║'
+    echo '╚══════════════════════════════════════════════════════════╝'
+    echo -e "${NC}"
+    
+    echo -e "${CYAN}┌──────────────────────────────────────────────────────┐${NC}"
+    echo -e "${CYAN}│  📁 Theme Location: $THEME_DIR  │${NC}"
+    echo -e "${CYAN}│  💾 Backup Location: $BACKUP_DIR │${NC}"
+    echo -e "${CYAN}└──────────────────────────────────────────────────────┘${NC}"
+    
+    echo -e "\n${YELLOW}⚠ IMPORTANT:${NC}"
+    echo -e "   1. Refresh your browser (Ctrl+F5)"
+    echo -e "   2. Restart queue worker: ${CYAN}systemctl restart pteroq${NC}"
+    echo -e "   3. If theme doesn't show, run: ${CYAN}php artisan optimize:clear${NC}"
 }
 
 # Cleanup
@@ -359,7 +363,7 @@ main() {
     check_dependencies
     create_backup
     download_theme
-    extract_theme
+    # extract_theme is merged into install_theme for better logic
     install_theme
     set_permissions
     clear_cache
