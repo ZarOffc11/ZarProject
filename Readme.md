@@ -62,5 +62,6 @@ This script will automatically backup your old views and apply the Nebula Grid t
 ### 📝 Credits
  * Base Software: Pterodactyl Panel
  * Theme Developer: ZarProject
+ * Default Language : Indonesian
 
 © 2015 - 2026 ZarProject. All rights reserved.
