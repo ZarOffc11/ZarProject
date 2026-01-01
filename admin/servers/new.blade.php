@@ -64,6 +64,7 @@
 </style>
 
 <form action="{{ route('admin.servers.new') }}" method="POST">
+    @csrf
     
     <div class="row">
         <div class="col-xs-12">
@@ -73,7 +74,6 @@
                         <h1>Create Server</h1>
                         <small>Add new server to panel</small>
                     </div>
-                    {{-- TOMBOL THEME DIHAPUS --}}
                 </div>
 
                 <div class="card-section-head"><span class="material-symbols-rounded" style="color:#6366f1">settings</span> Core Details</div>
@@ -94,7 +94,7 @@
                             <textarea name="description" rows="3" class="form-control" placeholder="Optional...">{{ old('description') }}</textarea>
                         </div>
                         <div class="checkbox checkbox-primary" style="margin-top: 15px;">
-                            <input id="pStart" name="start_on_completion" type="checkbox" checked />
+                            <input id="pStart" name="start_on_completion" type="checkbox" value="1" checked />
                             <label for="pStart" style="color:var(--text-main); font-weight:500;">Start server after installation</label>
                         </div>
                     </div>
@@ -140,6 +140,9 @@
             <div class="theme-card">
                 <div class="card-section-head"><span class="material-symbols-rounded" style="color:#6366f1">memory</span> Resource Limits</div>
                 <div class="card-body-theme row">
+                    <!-- Hidden field untuk IO (jika diperlukan oleh sistem) -->
+                    <input type="hidden" name="io" value="500">
+                    
                     <div class="col-xs-6 form-group">
                         <label>Memory (MB)</label>
                         <input type="text" name="memory" class="form-control" value="{{ old('memory') }}">
@@ -158,12 +161,28 @@
                         <label>Swap (MB)</label>
                         <input type="text" name="swap" class="form-control" value="{{ old('swap', 0) }}">
                     </div>
+
+                    {{-- NEW IO BLOCK --}}
+                    <div class="col-xs-6 form-group">
+                        <label>Block IO Weight</label>
+                        <input type="text" name="blkio_weight" class="form-control" value="{{ old('blkio_weight', 500) }}">
+                        <p class="text-muted small">IO Performance (10-1000).</p>
+                    </div>
+                    <div class="col-xs-6 form-group" style="display:flex; align-items:center; height: 75px;">
+                        <div class="checkbox checkbox-primary">
+                            <!-- Hidden field untuk nilai default ketika checkbox tidak dicentang -->
+                            <input type="hidden" name="oom_disabled" value="0">
+                            <input id="pOomDisabled" name="oom_disabled" type="checkbox" value="1" {{ old('oom_disabled') ? 'checked' : '' }} />
+                            <label for="pOomDisabled" style="color:var(--text-main); font-weight:500;">Enable OOM Killer</label>
+                        </div>
+                    </div>
+                    {{-- END IO BLOCK --}}
                     
                     <div class="col-xs-12"><hr style="border-top:1px solid var(--border-color);"></div>
 
-                    <div class="col-xs-4 form-group"><label>Databases</label><input type="text" name="database_limit" class="form-control" value="0"></div>
-                    <div class="col-xs-4 form-group"><label>Allocations</label><input type="text" name="allocation_limit" class="form-control" value="0"></div>
-                    <div class="col-xs-4 form-group"><label>Backups</label><input type="text" name="backup_limit" class="form-control" value="0"></div>
+                    <div class="col-xs-4 form-group"><label>Databases</label><input type="text" name="database_limit" class="form-control" value="{{ old('database_limit', 0) }}"></div>
+                    <div class="col-xs-4 form-group"><label>Allocations</label><input type="text" name="allocation_limit" class="form-control" value="{{ old('allocation_limit', 0) }}"></div>
+                    <div class="col-xs-4 form-group"><label>Backups</label><input type="text" name="backup_limit" class="form-control" value="{{ old('backup_limit', 0) }}"></div>
                 </div>
             </div>
         </div>
@@ -225,7 +244,6 @@
     @parent
     {!! Theme::js('vendor/lodash/lodash.js') !!}
     <script>
-        // JS THEME TOGGLE DIHAPUS (SUDAH GLOBAL)
         function serviceVariablesUpdated(eggId, ids) {
             @if (old('egg_id'))
                 if (eggId != '{{ old('egg_id') }}') return;
@@ -241,6 +259,19 @@
     {!! Theme::js('js/admin/new-server.js?v=20220530') !!}
     <script>
         $(document).ready(function() {
+            // Debug form submission
+            $('form').on('submit', function(e) {
+                var formData = $(this).serializeArray();
+                console.log('Form Data:', formData);
+                
+                // Cek apakah semua required field ada
+                var requiredFields = ['io', 'blkio_weight', 'oom_disabled'];
+                requiredFields.forEach(function(field) {
+                    var exists = formData.find(item => item.name === field);
+                    console.log(field + ' exists:', exists ? 'Yes - ' + exists.value : 'No');
+                });
+            });
+            
             @if (old('owner_id'))
                 $.ajax({ url: '/admin/users/accounts.json?user_id={{ old('owner_id') }}', dataType: 'json' }).then(function (data) { initUserIdSelect([ data ]); });
             @else initUserIdSelect(); @endif
@@ -261,4 +292,3 @@
     </script>
 @endsection
 @endsection
-
