@@ -43,20 +43,24 @@ This script will automatically backup your old views and apply the Nebula Grid t
 ---
 
 ### 📋 Changelog
-[1.1] - 2026-01-01
-➕ Added
+# [1.1] - 2026-01-01 :
+## ➕ Added
  * Admin Overview Revamp:
    * Full redesign of admin/index.blade.php.
    * Added Auto-Refresh mechanism for statistics cards.
    * Integration of Material Icons CDN.
    * Added gradient indicators for "System Health" status.
-🛠 Fixed
+## 🛠 Fixed
  * Server Creation Bug: Fixed an issue where the server creation modal would not trigger correctly in the previous build.
-[1.0] - 2025-12-31
+# [1.0] - 2025-12-31
  * 🎉 Initial Release:
-   * Launch of the Nebula Grid Admin Theme.
+   * Launch of the ZarProject Admin Theme.
    * Core grid styling and dark mode variables implementation.
-📝 Credits
+  
+---
+
+### 📝 Credits
  * Base Software: Pterodactyl Panel
  * Theme Developer: ZarProject
+
 © 2015 - 2026 ZarProject. All rights reserved.
