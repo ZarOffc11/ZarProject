@@ -26,9 +26,7 @@
 
 | Admin Dashboard | Resource Monitor |
 |:---:|:---:|
-| ![Admin Dashboard](https://via.placeholder.com/400x200?text=Admin+Dashboard+Preview) | ![Resource Monitor]([https://files.cloudkuimages.guru/images/fa066f6d0c18.jpg]) |
-
-> *Note: The screenshots above are placeholders. Please update them with actual images of your panel.*
+| ![Admin Dashboard](https://via.placeholder.com/400x200?text=Admin+Dashboard+Preview) | ![Resource Monitor](https://files.cloudkuimages.guru/images/fa066f6d0c18.jpg) |
 
 ---
 
@@ -38,9 +36,13 @@ Installation is fully automated. Simply run the following command on your Pterod
 
 ```bash
 bash <(curl -s [https://raw.githubusercontent.com/ZarOffc11/admin-theme/main/install.sh](https://raw.githubusercontent.com/ZarOffc11/admin-theme/main/install.sh))
+```
 
 This script will automatically backup your old views and apply the Nebula Grid theme to your Admin Panel.
-📋 Changelog
+
+---
+
+### 📋 Changelog
 [1.1] - 2026-01-01
 ➕ Added
  * Admin Overview Revamp:
