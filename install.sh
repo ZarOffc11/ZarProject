@@ -16,7 +16,7 @@ NC='\033[0m'
 # Configuration
 THEME_DIR="/var/www/pterodactyl/resources/views"
 # Link ini otomatis mengambil zip dari branch main terbaru
-THEME_ZIP_URL="https://github.com/ZarOffc11/admin-theme/archive/refs/heads/main.zip"
+THEME_ZIP_URL="https://github.com/ZarOffc11/ZarProject/archive/refs/heads/main.zip"
 BACKUP_DIR="/tmp/zarproject_backup_$(date +%Y%m%d_%H%M%S)"
 TEMP_DIR="/tmp/zarproject_install_$(date +%s)"
 
