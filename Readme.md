@@ -1,6 +1,6 @@
 Changelog
 
-[1.0.1] - 2026-01-01
+[1.1] - 2026-01-01
 
 ➕ Added
 
@@ -10,5 +10,5 @@ Changelog
 
 - Perbaikan bug tidak dapat membuat server
 
-[1.0.0] - 2025-12-31
+[1.0] - 2025-12-31
 🎉Release!!
